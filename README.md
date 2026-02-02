@@ -1,51 +1,58 @@
-# Emotion Recognition with Self-Supervised Learning
+# 🎭 Emotion Recognition with Self-Supervised Learning
 
-A two-stage approach for physiological signal-based emotion recognition using self-supervised learning and multi-instance learning with mixture of experts (MIL-MoE).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-1.9.0+-ee4c2c.svg)](https://pytorch.org/)
 
-## Overview
+> A two-stage approach for physiological signal-based emotion recognition using self-supervised learning and multi-instance learning with mixture of experts (MIL-MoE).
 
-This repository implements:
-- **Stage 1**: Self-supervised pre-training using contrastive learning with MultiModalResNet1D
-- **Stage 2**: Downstream emotion classification using MIL-MoE classifier with frozen pretrained encoder
+---
 
-## Installation
+## 📋 Overview
+
+This repository implements a robust framework for emotion recognition:
+- **Stage 1 (Pre-training)**: Self-supervised learning using contrastive learning with **MultiModalResNet1D**.
+- **Stage 2 (Downstream)**: Emotion classification using **MIL-MoE** (Multi-Instance Learning with Mixture of Experts) classifier with a frozen pretrained encoder.
+
+## 📦 Installation
+
+Install dependencies via pip:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Or install as a package:
+Or install the package in editable mode:
 
 ```bash
 pip install -e .
 ```
 
-## Requirements
-
+### Requirements
 - Python >= 3.7
 - PyTorch >= 1.9.0
 - NumPy >= 1.19.0
 - SciPy >= 1.5.0
 - tqdm >= 4.62.0
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 emotion_recognition_ssl_github/
-├── models/              # Model definitions
+├── 🧠 models/             # Model definitions
 │   ├── multimodal_resnet.py  # MultiModalResNet1D encoder
 │   └── mil_moe.py           # MIL-MoE classifier
-├── utils/               # Utility functions
+├── 🛠️ utils/              # Utility functions
 │   ├── data_utils.py    # Data loading utilities
 │   └── moco.py          # MoCo implementation
-├── configs/             # Configuration files
+├── ⚙️ configs/             # Configuration files
 │   ├── ssl_example.cfg  # Configuration for SSL training
 │   └── train_example.cfg # Configuration for downstream training
-├── train_ssl.py         # Stage 1: Self-supervised training
-└── train_downstream.py  # Stage 2: Downstream training
+├── 🚀 train_ssl.py         # Stage 1: Self-supervised training
+└── 🚀 train_downstream.py  # Stage 2: Downstream training
 ```
 
-## Usage
+## 🚀 Usage
 
 ### Stage 1: Self-Supervised Pre-training
 
@@ -55,19 +62,19 @@ Train the encoder using MoCo contrastive learning:
 python train_ssl.py --cfg configs/ssl_example.cfg --epochs 300 --batch_size 32 --lr 0.03 --moco-dim 128 --moco-k 4096
 ```
 
-Arguments:
-- `--cfg`: Path to configuration file (default: `configs/ssl_example.cfg`)
-- `--epochs`: Number of training epochs (default: 300)
-- `--batch_size`: Batch size (default: 32)
-- `--lr`: Learning rate (default: 0.03)
-- `--moco-dim`: Feature dimension (default: 128)
-- `--moco-k`: Queue size for negative samples (default: 4096)
-- `--moco-m`: Momentum coefficient (default: 0.99)
-- `--moco-t`: Temperature parameter (default: 0.08)
-- `--fold-idx`: Fold index for data list file (default: 15)
-- `--multi-epoch-repeat`: Repeat dataloader iterations per epoch (default: 30)
-- `--resume`: Path to checkpoint to resume from (optional)
-- `--results-dir`: Output directory for checkpoints (optional)
+**Key Arguments:**
+
+| Argument | Default | Description |
+|----------|:-------:|-------------|
+| `--cfg` | `configs/ssl_example.cfg` | Path to configuration file |
+| `--epochs` | `300` | Number of training epochs |
+| `--batch_size` | `32` | Batch size |
+| `--lr` | `0.03` | Learning rate |
+| `--moco-dim` | `128` | Feature dimension |
+| `--moco-k` | `4096` | Queue size for negative samples |
+| `--moco-m` | `0.99` | Momentum coefficient |
+| `--moco-t` | `0.08` | Temperature parameter |
+| `--fold-idx` | `15` | Fold index for data list file |
 
 ### Stage 2: Downstream Training
 
@@ -77,69 +84,61 @@ Train the MIL-MoE classifier using the pretrained encoder:
 python train_downstream.py --cfg configs/train_example.cfg --pretrained path/to/checkpoint_epoch_300.pth --fold-idx 15
 ```
 
-Arguments:
-- `--cfg`: Path to configuration file (default: `configs/train_example.cfg`)
-- `--pretrained`: Path to pretrained model checkpoint (required)
-- `--fold-idx`: Fold index for data list file (default: 15)
+**Key Arguments:**
 
-## Configuration
+| Argument | Description |
+|----------|-------------|
+| `--cfg` | Path to configuration file (default: `configs/train_example.cfg`) |
+| `--pretrained` | **Required**. Path to pretrained model checkpoint |
+| `--fold-idx` | Fold index for data list file (default: `15`) |
+
+## ⚙️ Configuration
 
 ### SSL Configuration (`configs/ssl_example.cfg`)
-
-Edit the configuration file to set:
-- **Data section**: Dataset name, data folder, training list
-- **Windowing section**: Sampling rate (fs), window length (cw_len), channel configuration
-- **CNN section**: Architecture type, filter configurations
-- **Optimization section**: Learning rate, batch size, etc.
+Define your pre-training setup:
+- **Data**: Dataset name, folder path, training lists.
+- **Windowing**: Sampling rate (`fs`), window length (`cw_len`), channels.
+- **CNN**: Architecture type, filter specs.
+- **Optimization**: LR, batch size.
 
 ### Downstream Configuration (`configs/train_example.cfg`)
+Define your classification setup:
+- **Data**: Inputs and output directories.
+- **Windowing**: Must match SSL settings.
+- **CNN**: Architecture `arch` **must** match SSL training; `num_classes`.
+- **Optimization**: Training parameters.
 
-Edit the configuration file to set:
-- **Data section**: Dataset name, data folder, training list, output folder
-- **Windowing section**: Sampling rate, window length, channel configuration
-- **CNN section**: Architecture type (must match SSL training), number of classes
-- **Optimization section**: Learning rate, batch size, number of epochs
+> **Note**: Downstream training automatically sets segment length to `wlen // 6`. Ensure `num_classes` in the encoder matches feature dimension (128).
 
-**Important Notes**:
-- The downstream training uses `wlen // 6` as segment length, where `wlen` is calculated from `cw_len` in the config
-- The encoder's `num_classes` should match the feature dimension (128) to load pretrained weights correctly
-- Make sure the architecture (`arch`) matches between SSL and downstream training
-
-## Model Architecture
+## 🧠 Model Architecture
 
 ### MultiModalResNet1D
-- SincConv-based feature extraction
-- ResNet-18 backbone per modality
-- Cross-modal attention mechanism
-- Outputs 128-dimensional features
+- **SincConv**: Feature extraction tailored for time-series.
+- **ResNet-18 Backbone**: Deep feature learning per modality.
+- **Cross-Modal Attention**: Fuses information across modalities.
+- **Output**: 128-dimensional features.
 
 ### MoEEmotionClassifier
-- Uses pretrained encoder (frozen during training)
-- Mixture of Experts (MoE) for segment-level processing
-- Aggregates segment features for trial-level classification
-- Supports both single-label and multi-label classification
+- **Frozen Encoder**: Uses the pre-trained weights (frozen during training).
+- **Mixture of Experts (MoE)**: Segment-level processing.
+- **MIL Aggregation**: Aggregates segment features for trial-level classification.
+- **Flexibility**: Supports both single-label and multi-label (e.g., V-A-D for DEAP) tasks.
 
-## Data Format
+## 💾 Data Format
 
-The code expects data files in `.mat` format:
-- For DEAP dataset: `data['data']` should contain the EEG signals
-- For SEED dataset: `data['eeg']` should contain the EEG signals
-- File naming convention for DEAP: `{subject_id}_{trial_id}_{valence}_{arousal}_{dominance}.mat`
+The pipeline expects `.mat` files:
+- **DEAP**: Expects `data['data']` for signals. File pattern: `{sub}_{trial}_{val}_{aro}_{dom}.mat`.
+- **SEED**: Expects `data['eeg']` for signals.
 
-## Training Process
+## 🔄 Training Workflow
 
-1. **Self-supervised training**: Train the encoder using MoCo contrastive learning on unlabeled or weakly labeled data
-2. **Downstream training**: Freeze the encoder and train the MIL-MoE classifier on labeled emotion data
-3. The pretrained encoder weights are loaded and only matching layers are transferred
+1.  **Self-Supervised Pre-training**:
+    *   Learn representations on unlabeled/weakly labeled data using MoCo.
+2.  **Downstream Fine-tuning**:
+    *   Freeze encoder weights.
+    *   Train MIL-MoE classifier on labeled data.
+    *   *Note: Only matching layers (by name and shape) are transferred from the pretrained model.*
 
-## Notes
+## 📜 License
 
-- The encoder is frozen during downstream training
-- Only matching layers (by name and shape) are loaded from the pretrained model
-- The model supports both single-label and multi-label classification (e.g., V-A-D for DEAP)
-- Segment length in downstream training is automatically set to `wlen // 6` to process longer trials
-
-## License
-
-MIT License - see LICENSE file for details
-
+MIT License - see [LICENSE](LICENSE) file for details.
